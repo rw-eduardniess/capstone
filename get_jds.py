@@ -1,15 +1,9 @@
-import openai
-from langchain_openai import ChatOpenAI, OpenAIEmbeddings
+from langchain_openai import OpenAIEmbeddings
 from langchain_core.documents import Document
-from langchain_core.runnables import RunnablePassthrough
-from langchain_core.output_parsers import StrOutputParser
-from langchain import hub
-from langsmith import traceable
-from langchain_core.vectorstores import InMemoryVectorStore
-import chromadb
 from langchain_chroma import Chroma
-import xml.etree.ElementTree as ET 
 from typing import Union, Dict, Any 
+import xml.etree.ElementTree as ET 
+import chromadb
 import os
 import sys
 import requests
@@ -23,9 +17,11 @@ os.environ["LANGCHAIN_API_KEY"] = os.getenv("LANGCHAIN_API_KEY")
 os.environ["LANGCHAIN_TRACING_V2"] = os.getenv("LANGCHAIN_TRACING_V2")
 os.environ["LANGCHAIN_PROJECT"] = os.getenv("LANGCHAIN_PROJECT")
 
-JD_DETAILS_URL = "http://192.168.2.213:10180/redwood/api-extension/External/REDWOOD/Redwood_RestService/rest/v1/JobDefinition/"
-JD_DETAILS_API_KEY = "eZZyQSoApJB0d9lMUeMwuD4rCbV42+NNGsuGzPLdC8xCi0m9gzTXcFkIzL3uNP9G4jP8mOEerVWWjLuWKLilD95B"
-GET_JDS_URL = "http://192.168.2.213:10180/redwood/api-rest/list/JobDefinition?check=View"
+RMJ_URL = os.getenv("RMJ_URL")
+RMJ_REST_API_KEY = os.getenv("RMJ_REST_API_KEY")
+
+JD_DETAILS_URL = f"{RMJ_URL}/api-extension/External/REDWOOD/Redwood_RestService/rest/v1/JobDefinition/"
+GET_JDS_URL = f"{RMJ_URL}/api-rest/list/JobDefinition?check=View"
 USERNAME = "admin"
 PASSWORD = "admin"
 
@@ -107,33 +103,7 @@ def get_rest_service_data(url: str, params: dict = None, headers: dict = None, a
   except Exception as e:
       print(f"An unexpected error occurred: {e}", file=sys.stderr)
       return {"error": "Unexpected Error", "details": str(e)}
-
-# prompt = hub.pull("rlm/rag-prompt")
-
-# llm = ChatOpenAI(model="gpt-4o-mini")
-
-# @traceable  # Auto-trace this function
-# def reply_to_review(review):
-# # Convert the vectorstore into a retriever
-#   vectorstore = InMemoryVectorStore(embeddings)
-#   vectorstore.add_documents([Document(
-#         page_content=review,
-#         metadata={"source": "Customer"})])
-#   retriever = vectorstore.as_retriever()
-#   rag_chain = (
-#     {
-#       "context": retriever, 
-#       "question": RunnablePassthrough()
-#     }
-#     | prompt
-#     | llm
-#     | StrOutputParser()
-#   )
-#   rag_chain.invoke("For the reviews of WidgetWorld generate five responses from WidgetWorld. Be polite but assertive.")
-
-# for review in documents:
-#   reply_to_review(review)
-
+  
 
 r = get_rest_service_data(GET_JDS_URL, auth=(USERNAME, PASSWORD))
 for jd in r.get("rest-object", []):
@@ -141,7 +111,7 @@ for jd in r.get("rest-object", []):
   jdName = jd.get('business-key').removeprefix("JobDefinition:")
 
   print(f"Job Definition: {jdName},  -  {jd.get('description')}")
-  jd_details = get_rest_service_data(f"{JD_DETAILS_URL}{jdName}", headers={"X-API-KEY": JD_DETAILS_API_KEY})
+  jd_details = get_rest_service_data(f"{JD_DETAILS_URL}{jdName}", headers={"X-API-KEY": RMJ_REST_API_KEY})
   if isinstance(jd_details, dict):
     vectorstore.add_documents([Document(
         page_content=json.dumps(jd_details, indent=2),
@@ -150,4 +120,4 @@ for jd in r.get("rest-object", []):
   else:
     print(f"Failed to fetch details for {jdName}: {jd_details}")
 
-print(f"Added {len(vectorstore._collection.get()['documents'])} documents to the vectorstore.")
+print(f"Store has {len(vectorstore._collection.get()['documents'])} documents.")

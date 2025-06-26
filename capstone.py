@@ -1,11 +1,9 @@
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from langchain_core.runnables import RunnablePassthrough
 from langchain_core.output_parsers import StrOutputParser
-from langchain.prompts.prompt import PromptTemplate
 from langchain import hub
-from langsmith import traceable
-import chromadb
 from langchain_chroma import Chroma
+import chromadb
 import os
 from dotenv import load_dotenv
 
@@ -45,20 +43,13 @@ rag_chain = (
   | llm
   | StrOutputParser()
 )
-reply = rag_chain.invoke("For which job definitions are maintenance.")
-print(reply)
 
-# retriever = vectorstore.as_retriever()
-# context = retriever.invoke(prompt)
-
-# # Adding context to our prompt
-# template = PromptTemplate(template="{query} Context: {context}", input_variables=["query", "context"])
-# prompt_with_context = template.invoke({"query": prompt, "context": context})
-
-# @traceable
-# def reply_to_query(prompt_with_context):
-#     llm = ChatOpenAI(temperature=0.7, model_name="gpt-4o-mini")
-#     results = llm.invoke(prompt_with_context)
-#     return results.content
-
-# print(reply_to_query(prompt_with_context))
+while True:
+  user_input = input("Your question or 'exit'> ").strip()
+  
+  if user_input.lower() == 'exit':
+    print("Goodbye!")
+    break
+  
+  reply = rag_chain.invoke(user_input)
+  print(reply)
