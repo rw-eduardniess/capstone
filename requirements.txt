@@ -13,6 +13,7 @@ chromadb==0.5.3
 dataclasses-json==0.6.7
 distro==1.9.0
 faiss-cpu==1.8.0.post1
+flask
 frozenlist==1.4.1
 h11==0.14.0
 httpcore==1.0.5

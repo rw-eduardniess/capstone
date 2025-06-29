@@ -17,3 +17,22 @@ services:
       - LANGFUSE_HOST=${LANGFUSE_HOST}
     volumes:
       - .:/app
+
+  server:
+    build:
+      args:
+          INSTALL_JUPYTER: false
+    ports:
+      - "5004:5000"
+    environment:
+      - RMJ_URL=${RMJ_URL}
+      - RMJ_REST_API_KEY=${RMJ_REST_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - LANGCHAIN_API_KEY=${LANGCHAIN_API_KEY}
+      - LANGCHAIN_TRACING_V2=${LANGCHAIN_TRACING_V2}
+      - LANGCHAIN_PROJECT=${LANGCHAIN_PROJECT}
+      - LANGFUSE_SECRET_KEY=${LANGFUSE_SECRET_KEY}
+      - LANGFUSE_PUBLIC_KEY=${LANGFUSE_PUBLIC_KEY}
+      - LANGFUSE_HOST=${LANGFUSE_HOST}
+    volumes:
+      - .:/app
